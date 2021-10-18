@@ -84,9 +84,9 @@ def get_attr_entropy(attr, D):
         print(attr)
         print("attr", attr_val_count[0])
         print("type", type(D))
-        print("color", D[Color])
+        print("color", D['Color'])
         print(D[D[attr]==attr_val_count[0]])
-        #attr_val_count[1]/total_rows * getEntropy(D.query('@attr == @attr_val_count[0]'))
+        attr_val_count[1]/total_rows * getEntropy(D.query('@attr == @attr_val_count[0]'))
 
 
 
