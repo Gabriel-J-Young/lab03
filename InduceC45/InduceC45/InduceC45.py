@@ -20,18 +20,20 @@ print(trainingSet)
 #thresh: threshhold for splitting
 #returns Tree root
 def C45(D, A, classifier, thresh):
-    print("iloc?", D.iloc[:, -1])
-    print("attributes", D.iloc[:, -1].mode()[0])
-    print("classifiers", D[classifier])
-    print("A", A)
+    print()
+    print("------ running with A=", A,"------")
+    print(D)
     #check termination conditions
     #first: if all of the dataset's attributes have the same class label c, if so, create 
     #a tree with a single node and assign class label c
     if (all_same(D[classifier])): #look at last column (should be classes)
-        leaf = Node(D.iloc[-1, -1]) #look at last row and col & set leaf node to found class
+        print(type(D[classifier]))
+        print("classifier,", D[classifier])
+        leaf = Node(D[classifier].iloc[-1]) #look at last row and col & set leaf node to found class
         T = leaf
     elif (len(A) == 0): #if we have no more attributes to look at...
-        c = D.iloc[:, -1].mode()[0] #mode returns array lol
+        c = D[classifier].mode()[0] #mode returns array lol
+        print("MMMMMMMMMM Mode", D[classifier].mode())
         leaf = Node(c) #set leaf node to plurality class
         T = leaf
     else:
@@ -47,9 +49,8 @@ def C45(D, A, classifier, thresh):
                 Dv = D[D[best_A]==attr_inst]
                 if (not Dv.empty):
                     edge_node = Node(attr_inst)
-                    print("t:", T)
-                    print("best_A", best_A)
-                    print(A)
+                    #print("t:", T)
+                    #print("best_A", best_A)
                     new_A = A.copy()
                     new_A.remove(best_A)
                     branch = C45(Dv, new_A, classifier, thresh)
@@ -66,15 +67,14 @@ def select_splitting_attribute(A, D, thresh):
     print("entropy:",base_entropy)
     #class_labels = D.iloc[:, -1:].unique()
     #for label in class_labels: #calculate entropy of D
-       
-    print("A", A)
+
     for attr in A: #for each attribute passed in...
-        print("attr12", attr)
+        #print("attr12", attr)
         attr_entropy = get_attr_entropy(attr, D)#calculate entropy of D after being split by attr
-        print("entropy of", attr, attr_entropy)
+        #print("entropy of", attr, attr_entropy)
         gains[attr] = base_entropy - attr_entropy
-        print("entropy calc:", base_entropy,"-", attr_entropy)
-        print("gains", gains)
+        #print("entropy calc:", base_entropy,"-", attr_entropy)
+        #print("gains", gains)
     best_attr = max(gains, key=gains.get)#find highest info gain
     if (gains[best_attr] > thresh):
         return best_attr;
@@ -117,6 +117,6 @@ for attribute in trainingSet.columns.values:
 classifier = A[-1]
 del A[-1]
 
-T = C45(trainingSet, A, classifier, .2)
+T = C45(trainingSet, A, classifier, 0.0)
 print(RenderTree(T))
 
