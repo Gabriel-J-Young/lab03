@@ -46,11 +46,16 @@ def C45(D, A, classifier, thresh):
             for attr_inst in D[best_A].unique(): #for each instance of that attribute
                 Dv = D[D[best_A]==attr_inst]
                 if (not Dv.empty):
-                    edge_node = Node(v)
-                    branch = C45(Dv, A.remove(Ag), thresh)
-                    branch.parent = edge_node
+                    edge_node = Node(attr_inst)
+                    print("t:", T)
+                    print("best_A", best_A)
+                    print(A)
+                    new_A = A.copy()
+                    new_A.remove(best_A)
+                    branch = C45(Dv, new_A, classifier, thresh)
+                    branch.parent = edge_node 
                     edge_node.parent = T
-                    branch.parent(T) #append branch to T with edge labeled v
+                    #T.children += (edge_node,) #append branch to T with edge labeled attr_inst
     return T
 
     
