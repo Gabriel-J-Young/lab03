@@ -12,7 +12,7 @@
     <Name>InduceC45</Name>
     <RootNamespace>InduceC45</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>adult-stretch.csv</CommandLineArguments>
+    <CommandLineArguments>housing.csv</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

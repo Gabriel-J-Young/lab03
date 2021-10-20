@@ -1,0 +1,17 @@
+Bedrooms,Basement,Floorplan,Location,Visited
+3,no,traditional,S,no
+3,yes,traditional,S,yes
+3,yes,open,N,no
+3,yes,traditional,N,no
+3,no,open,N,no
+3,yes,traditional,S,yes
+3,yes,open,S,no
+3,no,traditional,S,no
+4,no,traditional,S,yes
+4,yes,open,N,no
+4,yes,open,S,yes
+4,no,traditional,N,no
+4,no,open,S,yes
+4,yes,open,S,yes
+4,no,traditional,N,no
+4,yes,open,N,no
