@@ -25,9 +25,6 @@ confusion_matrix = [[]]
 
 with open(args.JSONFILE.name) as f:
     d_tree_dict = json.load(f)
-#print(d_tree_dict)
-#print(d_tree_dict['node']['var'])
-#print(d_tree_dict['node']['edges'][''])
 
 def predict_class_label(row, node):
     local_var = node['var'] #get edge with matching val in row[va] if leaf, return else, recurse
@@ -65,7 +62,9 @@ def print_stats(confusion_list, predict_class_label):
     print("total number of records classified: " + str(total_classified))
     print("total number of records correctly classified: " + str(total_classified_correct))
     print("total number of records incorrecly classified: " + str(total_classified_incorrect))
-    print("actual_value[predicted, predicted, etc]")
+    print("overall accuracy: " + str(total_classified_correct/total_classified))
+    print("error rate: " + str(total_classified_incorrect/total_classified))
+    print("{actual_value[predicted, predicted, etc],etc}")
     print(confusion_lists)
 
 print_stats(confusion_list, predict_class_label)

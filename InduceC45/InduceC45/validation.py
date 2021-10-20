@@ -17,9 +17,13 @@ args = parser.parse_args()
 
 trainingSet = pd.read_csv(args.training_file.name, skiprows =[1,2])
 
+slices_num = args.n
+if (slices_num == -1):
+    slices_num = len(trainingSet.index)-1
+
 #slice dataset into n slices of equal size
 shuffled = trainingSet.sample(frac=1)
-slices = np.array_split(shuffled, args.n)  
+slices = np.array_split(shuffled, slices_num)  
 
 for idx, slice in enumerate(slices): #each slice must be designated as a holdout set once
     tmp_slices = slices[0:idx] + slices[idx+1:]
@@ -28,11 +32,11 @@ for idx, slice in enumerate(slices): #each slice must be designated as a holdout
     if (args.restrictionsFile):
         c45 = subprocess.call("InduceC45.py " + args.training_file.name + " " + args.restrictionsFile.name)
         c45.wait()
-        classify = subprocess.call("classify.py " + args.training_file.name + " example_nursery.json ", + n)
-
-        
+        classify = subprocess.call("classify.py " + args.training_file.name + " example_nursery.json " + n,  check=True, stdout=subprocess.PIPE)
     else:
         c45 = subprocess.call("python3 InduceC45.py " + args.training_file.name)
+        c45.wait()
+        classify = subprocess.call("classify.py " + args.training_file.name + " example_nursery.json " + n)
 
 
         

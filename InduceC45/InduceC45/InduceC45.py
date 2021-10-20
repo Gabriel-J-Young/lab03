@@ -16,14 +16,13 @@ args = parser.parse_args()
 
 trainingSet = pd.read_csv(args.TrainingSetFile.name, skiprows=[1,2])
 
-print(trainingSet)
+#print(trainingSet)
 
 #D: training dataset (pandas dataframe)
 #A: list of attributes
 #thresh: threshhold for splitting
 #returns Tree root
 def C45(D, A, classifier, thresh):
-    print()
     #print("------ running with A=", A,"------")
     #print(D)
     #check termination conditions
