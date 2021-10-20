@@ -1,7 +1,9 @@
 import argparse
 import math
 import pandas as pd
+import json
 from anytree import Node, RenderTree
+from anytree.exporter import JsonExporter
 from six import assertRaisesRegex
 
 parser = argparse.ArgumentParser()
@@ -29,20 +31,19 @@ def C45(D, A, classifier, thresh):
     #a tree with a single node and assign class label c
     if (all_same(D[classifier])): #look at last column (should be classes)
         T = Node(D[classifier].iloc[-1]) #look at last row and col & set leaf node to found class
-        T.purity = 1.0;
+        T.purity = float(1.0);
     elif (len(A) == 0): #if we have no more attributes to look at...      
         T = make_plurality_leaf(D, classifier)
     else:
         best_A = select_splitting_attribute(A, D, thresh, classifier) #best_A is the best attribute
-        print("BEST ATTRIBUTE:", best_A)
         if (best_A) == None: #no attribute is good enough for a split
             T = make_plurality_leaf(D,classifier)
         else: #construct non-leaf node
-            T = Node(best_A) #this node should be labeled with an attribute
+            T = Node(str(best_A)) #this node should be labeled with an attribute
             for attr_inst in D[best_A].unique(): #for each instance of that attribute
                 Dv = D[D[best_A]==attr_inst]
                 if (not Dv.empty):
-                    edge_node = Node(attr_inst)
+                    edge_node = Node(str(attr_inst))
                     new_A = A.copy()
                     new_A.remove(best_A)
                     branch = C45(Dv, new_A, classifier, thresh)
@@ -54,8 +55,8 @@ def make_plurality_leaf(D, classifier):
     #set leaf node to plurality class and return that node
     c = D[classifier].mode()[0] #mode returns array lol
     print("------- Mode", c)
-    leaf = Node(c) #set leaf node to plurality class
-    leaf.purity = D[classifier][c]/len(D[classifier])
+    leaf = Node(str(c)) #set leaf node to plurality class
+    leaf.purity = float(D[classifier][c]/len(D[classifier]))
     return leaf
     
 def select_splitting_attribute(A, D, thresh, classifier):
@@ -99,12 +100,36 @@ def all_same(s):
     a = s.to_numpy()
     return (a[0] == a).all()
 
+def tree_to_json(T, classifier):
+    #given a c45 tree, returns a json 
+    if T.hasattr(purity):
+        pass
+        #leaf node, base case
+        #return {classifier:T.name
+                #purity:T.purity}
+
+
+    print(T.purity)
+    return json.dumps(T)
+
 A = []
 for attribute in trainingSet.columns.values:
     A.append(attribute)
 classifier = A[-1]
 del A[-1]
-
 T = C45(trainingSet, A, classifier, 0.0)
+print()
+print()
+print()
+print()
+print()
+print()
+print()
+print()
 print(RenderTree(T))
+#j = tree_to_json(T, classifier)
+exporter = JsonExporter(indent = 2, sort_keys=True)
+j = exporter.export(T)
+#TODO: add args.TrainingSetFile.name to json
+print(j)
 
