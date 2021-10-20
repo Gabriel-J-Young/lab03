@@ -7,17 +7,32 @@ from anytree import Node, RenderTree
 from six import assertRaisesRegex
 
 parser = argparse.ArgumentParser()
+
 parser.add_argument('TrainingSetFile',
                     type = argparse.FileType('r'))
 
-parser.add_argument('--restrictionsFile',
+parser.add_argument('restrictionsFile',
+                    nargs='?',
                     type = argparse.FileType('r'))
 args = parser.parse_args()
 
 trainingSet = pd.read_csv(args.TrainingSetFile.name, skiprows=[1,2])
 
-#print(trainingSet)
 
+restrict_list = None
+if args.restrictionsFile != None:
+    my_file = open(args.restrictionsFile.name, "r")
+    content = my_file.read()
+    restrict_list = content.split(",")
+    my_file.close()
+
+def restricted_dataset(D,A, restrict_list):
+    for i in range(0,len(restrict_list)):
+        if int(restrict_list[i])==1:
+            D = D.drop(columns = [A[i]])
+            del A[i]
+    return D
+                   
 #D: training dataset (pandas dataframe)
 #A: list of attributes
 #thresh: threshhold for splitting
@@ -135,6 +150,11 @@ for attribute in trainingSet.columns.values:
     A.append(attribute)
 classifier = A[-1]
 del A[-1]
+if restrict_list != None:
+    trainingSet = restricted_dataset(trainingSet, A, restrict_list)
+
+#print(trainingSet)
+
 T = C45(trainingSet, A, classifier, 0.0)
 #print(RenderTree(T))
 j = tree_to_json(T)
