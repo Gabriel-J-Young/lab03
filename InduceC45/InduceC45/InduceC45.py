@@ -3,7 +3,6 @@ import math
 import pandas as pd
 import json
 from anytree import Node, RenderTree
-from anytree.exporter import JsonExporter
 from six import assertRaisesRegex
 
 parser = argparse.ArgumentParser()
@@ -14,7 +13,7 @@ parser.add_argument('--restrictionsFile',
                     type = argparse.FileType('r'))
 args = parser.parse_args()
 
-trainingSet = pd.read_csv(args.TrainingSetFile.name)
+trainingSet = pd.read_csv(args.TrainingSetFile.name, skiprows=[1,2])
 
 print(trainingSet)
 
@@ -24,8 +23,8 @@ print(trainingSet)
 #returns Tree root
 def C45(D, A, classifier, thresh):
     print()
-    print("------ running with A=", A,"------")
-    print(D)
+    #print("------ running with A=", A,"------")
+    #print(D)
     #check termination conditions
     #first: if all of the dataset's attributes have the same class label c, if so, create 
     #a tree with a single node and assign class label c
@@ -54,7 +53,7 @@ def C45(D, A, classifier, thresh):
 def make_plurality_leaf(D, classifier):
     #set leaf node to plurality class and return that node
     c = D[classifier].mode()[0] #mode returns array lol
-    print("------- Mode", c)
+    #print("------- Mode", c)
     leaf = Node(str(c)) #set leaf node to plurality class
     leaf.purity = float(D[classifier][c]/len(D[classifier]))
     return leaf
@@ -100,17 +99,35 @@ def all_same(s):
     a = s.to_numpy()
     return (a[0] == a).all()
 
-def tree_to_json(T, classifier):
-    #given a c45 tree, returns a json 
-    if T.hasattr(purity):
-        pass
-        #leaf node, base case
-        #return {classifier:T.name
-                #purity:T.purity}
+#T: tree to tranlate to json
+def tree_to_json(T):
+    #given a c45 tree, returns a json
+    data = {}
+    data['dataset'] = args.TrainingSetFile.name
+    data['node'] = get_node(T)
 
+    return json.dumps(data, indent=4)
 
-    print(T.purity)
-    return json.dumps(T)
+def get_node(T):
+    data = {}
+    data['var'] = T.name
+    data['edges'] = get_edges(T.children)
+    return data
+
+def get_edges(children):
+    edges = []
+    for child in children:
+        data = {}
+        data['value'] = child.name
+        if (hasattr(child.children[0],'purity')): #must be leaf
+            data['leaf'] = {"decision": child.children[0].name,"p": child.children[0].purity}
+        else: #must be node
+            data['node'] = get_node(child.children[0])
+        name_dict = {}
+        name_dict['edge'] = data
+        edges.append(name_dict)
+    return edges
+
 
 A = []
 for attribute in trainingSet.columns.values:
@@ -118,18 +135,6 @@ for attribute in trainingSet.columns.values:
 classifier = A[-1]
 del A[-1]
 T = C45(trainingSet, A, classifier, 0.0)
-print()
-print()
-print()
-print()
-print()
-print()
-print()
-print()
-print(RenderTree(T))
-#j = tree_to_json(T, classifier)
-exporter = JsonExporter(indent = 2, sort_keys=True)
-j = exporter.export(T)
-#TODO: add args.TrainingSetFile.name to json
+j = tree_to_json(T)
 print(j)
 
