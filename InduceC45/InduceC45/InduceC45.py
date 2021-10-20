@@ -141,5 +141,4 @@ j = tree_to_json(T)
 json_data_file = open(os.path.splitext(args.TrainingSetFile.name)[0] + ".json", "w")
 json_data_file.write(j)
 json_data_file.close()
-print(os.path.splitext(args.TrainingSetFile.name)[0])
 
