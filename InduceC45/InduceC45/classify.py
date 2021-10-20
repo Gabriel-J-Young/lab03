@@ -21,7 +21,6 @@ trainingSet = pd.read_csv(args.CSVFile.name, skiprows=[1,2])
 #declare list to store predicted and actual classes
 confusion_list = []
 
-confusion_matrix = [[]]
 
 with open(args.JSONFILE.name) as f:
     d_tree_dict = json.load(f)

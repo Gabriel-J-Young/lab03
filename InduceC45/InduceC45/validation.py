@@ -5,7 +5,8 @@ import numpy as np
 from anytree import Node, RenderTree
 import subprocess
 import os
-import re
+import ast
+from collections import defaultdict
 
 parser = argparse.ArgumentParser()
 parser.add_argument('training_file',
@@ -28,6 +29,7 @@ shuffled = trainingSet.sample(frac=1)
 slices = np.array_split(shuffled, slices_num)
 
 overall_confusion_matrix = [[]]
+mats = []
 
 total_classified = 0
 total_correct = 0
@@ -45,7 +47,7 @@ for idx, slice in enumerate(slices): #each slice must be designated as a holdout
         classify = subprocess.run("classify.py " + args.training_file.name + " example_nursery.json ", check=True, stdout=subprocess.PIPE, universal_newlines=True)
     else:
         c45 = subprocess.run("python3 InduceC45.py " + args.training_file.name)
-        print("python3 classify.py " + args.training_file.name + " " + os.path.splitext(args.training_file.name)[0] + ".json ")
+        #print("python3 classify.py " + args.training_file.name + " " + os.path.splitext(args.training_file.name)[0] + ".json ")
         classify = subprocess.run("python3 classify.py " + args.training_file.name + " " + os.path.splitext(args.training_file.name)[0] + ".json ", check=True, stdout=subprocess.PIPE, universal_newlines=True)
         c_output = classify.stdout
         lines = c_output.splitlines()
@@ -54,8 +56,23 @@ for idx, slice in enumerate(slices): #each slice must be designated as a holdout
         total_incorrect += int(''.join(filter(str.isdigit, lines[2])))
         total_average_accurate_rate += int(''.join(filter(str.isdigit, lines[3])))
         total_average_error_rate += int(''.join(filter(str.isdigit, lines[4])))
+        
+        #print(lines[6])
+        mats.append(ast.literal_eval(lines[6]))
 
-print("Overall confusion matrix: ")
+dd = defaultdict(list)
+
+
+for d in mats:
+    for key, value in d.items():
+        dd[key].append(value)
+
+for d in dd:
+    for key, value in d.items():
+        dd1[key].sum(value)
+    
+
+print("Overall confusion matrix: " + str(dd))
 print("Overall accuracy: " + str(total_correct/total_classified))
 print("average accuracy: " + str(total_average_accurate_rate/slices_num))
 print("Overall error: " + str(total_incorrect/total_classified))
