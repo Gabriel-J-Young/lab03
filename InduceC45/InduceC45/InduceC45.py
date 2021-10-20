@@ -23,7 +23,6 @@ print(trainingSet)
 #thresh: threshhold for splitting
 #returns Tree root
 def C45(D, A, classifier, thresh):
-    print()
     #print("------ running with A=", A,"------")
     #print(D)
     #check termination conditions
@@ -54,9 +53,10 @@ def C45(D, A, classifier, thresh):
 def make_plurality_leaf(D, classifier):
     #set leaf node to plurality class and return that node
     c = D[classifier].mode()[0] #mode returns array lol
-    #print("------- Mode", c)
+    count_c = len(D[D[classifier]==c])
+    
     leaf = Node(str(c)) #set leaf node to plurality class
-    leaf.purity = float(D[classifier][c]/len(D[classifier]))
+    leaf.purity = float(count_c/len(D[classifier]))
     return leaf
     
 def select_splitting_attribute(A, D, thresh, classifier):
@@ -136,6 +136,7 @@ for attribute in trainingSet.columns.values:
 classifier = A[-1]
 del A[-1]
 T = C45(trainingSet, A, classifier, 0.0)
+#print(RenderTree(T))
 j = tree_to_json(T)
 json_data_file = open(os.path.splitext(args.TrainingSetFile.name)[0] + ".json", "w")
 json_data_file.write(j)
