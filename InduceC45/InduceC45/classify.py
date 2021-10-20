@@ -18,6 +18,11 @@ args = parser.parse_args()
 
 trainingSet = pd.read_csv(args.CSVFile.name, skiprows=[1,2])
 
+#declare list to store predicted and actual classes
+confusion_list = []
+
+confusion_matrix = [[]]
+
 with open(args.JSONFILE.name) as f:
     d_tree_dict = json.load(f)
 #print(d_tree_dict)
@@ -34,6 +39,33 @@ def predict_class_label(row, node):
                 return predict_class_label(row, edge['edge']['node'])
     return None #if we got here tree is incomplete
 
-for row in trainingSet.iterrows(): #predict value with decision tree and compair to true value
-    print(row)
-    print(predict_class_label(row, d_tree_dict['node']))
+for row in trainingSet.iterrows(): #predict value with decision tree and compare to true value
+    p_class_struct = predict_class_label(row, d_tree_dict['node'])
+    a_class = row[1][-1]
+    confusion_list.append((p_class_struct, a_class))
+
+def print_stats(confusion_list, predict_class_label):
+    total_classified = len(confusion_list)
+    total_classified_correct = 0
+    total_classified_incorrect = 0
+    confusion_lists = {} #each 
+    for val in trainingSet.iloc[:,-1].unique(): #for each possible class label
+        confusion_lists[val] = {}
+    for a_val in confusion_lists: # for each possible actual value
+        for val in trainingSet.iloc[:,-1].unique():
+            confusion_lists[a_val][val] = 0
+
+    for pair in confusion_list:
+        confusion_lists[pair[1]][pair[0]['decision']] += 1
+        #(predicted, actual)
+        if (pair[0]['decision'] == pair[1]):
+            total_classified_correct += 1
+        else:
+            total_classified_incorrect += 1
+    print("total number of records classified: " + str(total_classified))
+    print("total number of records correctly classified: " + str(total_classified_correct))
+    print("total number of records incorrecly classified: " + str(total_classified_incorrect))
+    print("actual_value[predicted, predicted, etc]")
+    print(confusion_lists)
+
+print_stats(confusion_list, predict_class_label)
