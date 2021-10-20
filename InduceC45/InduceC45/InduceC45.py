@@ -2,6 +2,7 @@ import argparse
 import math
 import pandas as pd
 import json
+import os
 from anytree import Node, RenderTree
 from six import assertRaisesRegex
 
@@ -136,5 +137,8 @@ classifier = A[-1]
 del A[-1]
 T = C45(trainingSet, A, classifier, 0.0)
 j = tree_to_json(T)
-print(j)
+json_data_file = open(os.path.splitext(args.TrainingSetFile.name)[0] + ".json", "w")
+json_data_file.write(j)
+json_data_file.close()
+print(os.path.splitext(args.TrainingSetFile.name)[0])
 
