@@ -21,13 +21,18 @@ trainingSet = pd.read_csv(args.training_file.name, skiprows =[1,2])
 shuffled = trainingSet.sample(frac=1)
 slices = np.array_split(shuffled, args.n)  
 
-for slice in slices: #each slice must be designated as a holdout set once
-    tmp_slices = slices.copy()
-    tmp_slices.remove(slice)
+for idx, slice in enumerate(slices): #each slice must be designated as a holdout set once
+    tmp_slices = slices[0:idx] + slices[idx+1:]
     training_set = pd.concat(tmp_slices)
     training_set.to_csv()
     if (args.restrictionsFile):
-        subprocess.Popen("InduceC45.py " + args.training_file.name + " " + args.restrictionsFile.name)
+        c45 = subprocess.call("InduceC45.py " + args.training_file.name + " " + args.restrictionsFile.name)
+        c45.wait()
+        classify = subprocess.call("classify.py " + args.training_file.name + " example_nursery.json ", + n)
+
+        
     else:
-        subprocess.Popen("python3 InduceC45.py " + args.training_file.name)
-    print(part,'\n')
+        c45 = subprocess.call("python3 InduceC45.py " + args.training_file.name)
+
+
+        
