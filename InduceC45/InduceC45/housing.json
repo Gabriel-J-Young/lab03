@@ -1,0 +1,83 @@
+{
+    "dataset": "housing.csv",
+    "node": {
+        "var": "Location",
+        "edges": [
+            {
+                "edge": {
+                    "value": "N",
+                    "leaf": {
+                        "decision": "no",
+                        "p": 1.0
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "S",
+                    "node": {
+                        "var": "Bedrooms",
+                        "edges": [
+                            {
+                                "edge": {
+                                    "value": "3",
+                                    "node": {
+                                        "var": "Basement",
+                                        "edges": [
+                                            {
+                                                "edge": {
+                                                    "value": "yes",
+                                                    "node": {
+                                                        "var": "Floorplan",
+                                                        "edges": [
+                                                            {
+                                                                "edge": {
+                                                                    "value": "traditional",
+                                                                    "leaf": {
+                                                                        "decision": "yes",
+                                                                        "p": 1.0
+                                                                    }
+                                                                }
+                                                            },
+                                                            {
+                                                                "edge": {
+                                                                    "value": "open",
+                                                                    "leaf": {
+                                                                        "decision": "no",
+                                                                        "p": 1.0
+                                                                    }
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "edge": {
+                                                    "value": "no",
+                                                    "leaf": {
+                                                        "decision": "no",
+                                                        "p": 1.0
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "edge": {
+                                    "value": "4",
+                                    "leaf": {
+                                        "decision": "yes",
+                                        "p": 1.0
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+}
