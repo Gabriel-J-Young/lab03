@@ -6,6 +6,8 @@ import os
 from anytree import Node, RenderTree
 from six import assertRaisesRegex
 
+continuous_threshold = 10
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument('TrainingSetFile',
@@ -37,7 +39,7 @@ def restricted_dataset(D,A, restrict_list):
 #A: list of attributes
 #thresh: threshhold for splitting
 #returns Tree root
-def C45(D, A, classifier, thresh):
+def C45(D, A, classifier, cont, thresh):
     #print("------ running with A=", A,"------")
     #print(D)
     #check termination conditions
@@ -60,7 +62,7 @@ def C45(D, A, classifier, thresh):
                     edge_node = Node(str(attr_inst))
                     new_A = A.copy()
                     new_A.remove(best_A)
-                    branch = C45(Dv, new_A, classifier, thresh)
+                    branch = C45(Dv, new_A, classifier,cont, thresh)
                     branch.parent = edge_node 
                     edge_node.parent = T
     return T
@@ -76,9 +78,7 @@ def make_plurality_leaf(D, classifier):
     
 def select_splitting_attribute(A, D, thresh, classifier):
     gains = {}
-    attrs = D.iloc[-1, -1:].unique()
     base_entropy = get_entropy(D, classifier)
-    #class_labels = D.iloc[:, -1:].unique()
     #for label in class_labels: #calculate entropy of D
 
     for attr in A: #for each attribute passed in...
@@ -145,6 +145,19 @@ def get_edges(children):
     return edges
 
 
+def get_continuous(D, A):
+    #returns a list of the continuous attributes in A
+    cont = []
+    for attr in A:
+        try:
+            i = int(D[attr].iloc[0])
+            if len(D[attr].unique()) > continuous_threshold:
+                cont.append(attr)
+        except ValueError:
+            pass
+    return cont
+
+
 A = []
 for attribute in trainingSet.columns.values:
     A.append(attribute)
@@ -152,11 +165,12 @@ classifier = A[-1]
 del A[-1]
 if restrict_list != None:
     trainingSet = restricted_dataset(trainingSet, A, restrict_list)
-
+cont = get_continuous(trainingSet, A)
+print(cont)
 #print(trainingSet)
 
-T = C45(trainingSet, A, classifier, 0.0)
-#print(RenderTree(T))
+T = C45(trainingSet, A, classifier, cont, 0.0)
+print(RenderTree(T))
 j = tree_to_json(T)
 json_data_file = open(os.path.splitext(args.TrainingSetFile.name)[0] + ".json", "w")
 json_data_file.write(j)
