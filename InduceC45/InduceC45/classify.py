@@ -58,6 +58,7 @@ def print_stats(confusion_list, predict_class_label):
             total_classified_correct += 1
         else:
             total_classified_incorrect += 1
+
     print("total number of records classified: " + str(total_classified))
     print("total number of records correctly classified: " + str(total_classified_correct))
     print("total number of records incorrecly classified: " + str(total_classified_incorrect))
