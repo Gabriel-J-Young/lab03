@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.vs/lab03/v17/.suo
+*.json
+.vs/slnx.sqlite
+InduceC45/InduceC45/.vs/InduceC45/v17/.suo
+*.json
