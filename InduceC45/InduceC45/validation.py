@@ -51,6 +51,7 @@ def get_rates(c_mat):
 def sum_mat(overall_confusion_matrix, c_mat):
     print("xd")
     if (not overall_confusion_matrix): #if overall_confusion_matrix is empty set it to c_mat
+        print("yes")
         overall_confusion_matrix = c_mat.copy()
     else: #else loop through c_mat and accumulate values
         for actual in c_mat:
@@ -87,6 +88,7 @@ for idx, slice in enumerate(slices): #each slice must be designated as a holdout
         #calculate average accuracy and error rate for this individual c_mat
         #mats.append(ast.literal_eval(lines[6]))
         overall_confusion_matrix = sum_mat(overall_confusion_matrix, inv_c_mat)
+        print(overall_confusion_matrix)
         counts = get_rates(inv_c_mat) #returns correct an incorrect counts
         total = counts[0] + counts[1]
         total_classified += total
