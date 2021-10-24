@@ -51,7 +51,7 @@ def C45(D, A, classifier, cont, thresh):
     elif (len(A) == 0): #if we have no more attributes to look at...      
         T = make_plurality_leaf(D, classifier)
     else:
-        best_A = select_splitting_attribute(A, D, thresh, classifier) #best_A is the best attribute
+        best_A = select_splitting_attribute(A, D, classifier, cont, thresh) #best_A is the best attribute
         if (best_A) == None: #no attribute is good enough for a split
             T = make_plurality_leaf(D,classifier)
         else: #construct non-leaf node
@@ -76,14 +76,16 @@ def make_plurality_leaf(D, classifier):
     leaf.purity = float(count_c/len(D[classifier]))
     return leaf
     
-def select_splitting_attribute(A, D, thresh, classifier):
+def select_splitting_attribute(A, D, classifier, cont, thresh):
     gains = {}
     base_entropy = get_entropy(D, classifier)
     #for label in class_labels: #calculate entropy of D
 
     for attr in A: #for each attribute passed in...
-        attr_entropy = get_attr_entropy(attr, D)#calculate entropy of D after being split by attr
-        #print("entropy of", attr, attr_entropy)
+        if cont[attr]: #A is continuous
+            attr_entropy = find_best_split_entropy(attr, D, classifier)
+        else:
+            attr_entropy = get_attr_entropy(attr, D, classifier)#calculate entropy of D after being split by attr
         gains[attr] = base_entropy - attr_entropy
     best_attr = max(gains, key=gains.get)#find highest info gain
     if (gains[best_attr] > thresh):
@@ -97,7 +99,22 @@ def get_entropy(D, classifier):
         entropy -= (count[1]/total_rows) * math.log(count[1]/total_rows, 2)
     return entropy
 
-def get_attr_entropy(attr, D):
+def find_best_split_entropy(attr, D, classifier):
+    return 0.0
+
+def get_cont_attr_entropy(attr, b_split, D, classifier):
+    #D is a pandas dataframe, attr is an attribute of that dataframe (e.g. Color)
+    #returns the entropy of D when D is split by that attr.
+    total_rows = len(D.index)
+    total_attr_entropy = 0;
+    D_greater = D[D[attr] > b_split]
+    D_less = D[D[attr] < b_split]
+    total_attr_entropy = (len(D_less)/total_rows)*get_entropy(D_less, classifier) + \
+        (len(D_greater)/total_rows)*get_entropy(D_greater, classifier)
+    #TODO: test
+    return total_attr_entropy
+
+def get_attr_entropy(attr, D, classifier):
     #D is a pandas dataframe, attr is an attribute of that dataframe (e.g. Color)
     #returns the entropy of D when D is split by that attr.
     total_rows = len(D.index)
@@ -146,22 +163,24 @@ def get_edges(children):
 
 
 def get_continuous(D, A):
-    #returns a list of the continuous attributes in A
-    cont = []
+    #returns a dict telling continuous attributes in A
+    cont = {}
     for attr in A:
         try:
             i = int(D[attr].iloc[0])
             if len(D[attr].unique()) > continuous_threshold:
-                cont.append(attr)
+                cont[attr] = True
+            else:
+                cont[attr] = False
         except ValueError:
-            pass
+            cont[attr] = False
     return cont
 
 
 A = []
 for attribute in trainingSet.columns.values:
     A.append(attribute)
-classifier = A[-1]
+classif = A[-1]
 del A[-1]
 if restrict_list != None:
     trainingSet = restricted_dataset(trainingSet, A, restrict_list)
@@ -169,7 +188,7 @@ cont = get_continuous(trainingSet, A)
 print(cont)
 #print(trainingSet)
 
-T = C45(trainingSet, A, classifier, cont, 0.0)
+T = C45(trainingSet, A, classif, cont, 0.0)
 print(RenderTree(T))
 j = tree_to_json(T)
 json_data_file = open(os.path.splitext(args.TrainingSetFile.name)[0] + ".json", "w")

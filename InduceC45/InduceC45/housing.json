@@ -1,11 +1,11 @@
 {
     "dataset": "housing.csv",
     "node": {
-        "var": "Location",
+        "var": "SqrFootage",
         "edges": [
             {
                 "edge": {
-                    "value": "N",
+                    "value": "1971",
                     "leaf": {
                         "decision": "no",
                         "p": 1.0
@@ -14,54 +14,43 @@
             },
             {
                 "edge": {
-                    "value": "S",
+                    "value": "3200",
+                    "leaf": {
+                        "decision": "no",
+                        "p": 1.0
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "4721",
+                    "leaf": {
+                        "decision": "no",
+                        "p": 1.0
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "3100",
+                    "leaf": {
+                        "decision": "yes",
+                        "p": 1.0
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "1900",
                     "node": {
                         "var": "Bedrooms",
                         "edges": [
                             {
                                 "edge": {
                                     "value": "3",
-                                    "node": {
-                                        "var": "Basement",
-                                        "edges": [
-                                            {
-                                                "edge": {
-                                                    "value": "yes",
-                                                    "node": {
-                                                        "var": "Floorplan",
-                                                        "edges": [
-                                                            {
-                                                                "edge": {
-                                                                    "value": "traditional",
-                                                                    "leaf": {
-                                                                        "decision": "yes",
-                                                                        "p": 1.0
-                                                                    }
-                                                                }
-                                                            },
-                                                            {
-                                                                "edge": {
-                                                                    "value": "open",
-                                                                    "leaf": {
-                                                                        "decision": "no",
-                                                                        "p": 1.0
-                                                                    }
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "edge": {
-                                                    "value": "no",
-                                                    "leaf": {
-                                                        "decision": "no",
-                                                        "p": 1.0
-                                                    }
-                                                }
-                                            }
-                                        ]
+                                    "leaf": {
+                                        "decision": "no",
+                                        "p": 1.0
                                     }
                                 }
                             },
@@ -75,6 +64,88 @@
                                 }
                             }
                         ]
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "4700",
+                    "node": {
+                        "var": "Bedrooms",
+                        "edges": [
+                            {
+                                "edge": {
+                                    "value": "3",
+                                    "leaf": {
+                                        "decision": "no",
+                                        "p": 1.0
+                                    }
+                                }
+                            },
+                            {
+                                "edge": {
+                                    "value": "4",
+                                    "leaf": {
+                                        "decision": "yes",
+                                        "p": 1.0
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "5034",
+                    "leaf": {
+                        "decision": "no",
+                        "p": 1.0
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "4000",
+                    "leaf": {
+                        "decision": "yes",
+                        "p": 1.0
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "7199",
+                    "leaf": {
+                        "decision": "no",
+                        "p": 1.0
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "4589",
+                    "leaf": {
+                        "decision": "yes",
+                        "p": 1.0
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "4218",
+                    "leaf": {
+                        "decision": "no",
+                        "p": 1.0
+                    }
+                }
+            },
+            {
+                "edge": {
+                    "value": "5182",
+                    "leaf": {
+                        "decision": "no",
+                        "p": 1.0
                     }
                 }
             }
