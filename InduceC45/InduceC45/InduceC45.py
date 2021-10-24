@@ -51,20 +51,40 @@ def C45(D, A, classifier, cont, thresh):
     elif (len(A) == 0): #if we have no more attributes to look at...      
         T = make_plurality_leaf(D, classifier)
     else:
-        best_A = select_splitting_attribute(A, D, classifier, cont, thresh) #best_A is the best attribute
+        ssa = select_splitting_attribute(A, D, classifier, cont, thresh) #best_A is the best attribute
+        best_A = ssa[0]
+        best_split = ssa[1]
         if (best_A) == None: #no attribute is good enough for a split
             T = make_plurality_leaf(D,classifier)
         else: #construct non-leaf node
             T = Node(str(best_A)) #this node should be labeled with an attribute
-            for attr_inst in D[best_A].unique(): #for each instance of that attribute
-                Dv = D[D[best_A]==attr_inst]
-                if (not Dv.empty):
-                    edge_node = Node(str(attr_inst))
-                    new_A = A.copy()
-                    new_A.remove(best_A)
-                    branch = C45(Dv, new_A, classifier,cont, thresh)
-                    branch.parent = edge_node 
-                    edge_node.parent = T
+            if cont[best_A]:
+                edge_node_g = Node(">="+str(best_split))
+                new_A_g = A.copy()
+                print(best_A)
+                print(cont)
+                print("bs",D[best_A])
+                D_greater = D[D[best_A] >= best_split]
+                branch_g = C45(D_greater, new_A_g, classifier,cont, thresh)
+                branch_g.parent = edge_node_g
+                edge_node_g.parent = T
+
+                edge_node_l = Node("<"+str(best_split))
+                new_A_l = A.copy()
+                D_less = D[D[best_A] < best_split]
+                branch_l = C45(D_less, new_A_l, classifier,cont, thresh)
+                branch_l.parent = edge_node_l
+                edge_node_l.parent = T
+            else:
+                for attr_inst in D[best_A].unique(): #for each instance of that attribute
+                    Dv = D[D[best_A]==attr_inst]
+                    if (not Dv.empty):
+                        edge_node = Node(str(attr_inst))
+                        new_A = A.copy()
+                        new_A.remove(best_A)
+                        branch = C45(Dv, new_A, classifier,cont, thresh)
+                        branch.parent = edge_node 
+                        edge_node.parent = T
     return T
 
 def make_plurality_leaf(D, classifier):
@@ -80,16 +100,18 @@ def select_splitting_attribute(A, D, classifier, cont, thresh):
     gains = {}
     base_entropy = get_entropy(D, classifier)
     #for label in class_labels: #calculate entropy of D
-
+    b_split = -1 #dummy value 
     for attr in A: #for each attribute passed in...
         if cont[attr]: #A is continuous
-            attr_entropy = find_best_split_entropy(attr, D, classifier)
+            b_split = find_best_split(attr, D, classifier)
+            attr_entropy = get_cont_attr_entropy(attr, b_split, D, classifier)
         else:
             attr_entropy = get_attr_entropy(attr, D, classifier)#calculate entropy of D after being split by attr
         gains[attr] = base_entropy - attr_entropy
     best_attr = max(gains, key=gains.get)#find highest info gain
+    print("gains:", gains)
     if (gains[best_attr] > thresh):
-        return best_attr;
+        return (best_attr, b_split)
     return None;
 
 def get_entropy(D, classifier):
@@ -99,16 +121,21 @@ def get_entropy(D, classifier):
         entropy -= (count[1]/total_rows) * math.log(count[1]/total_rows, 2)
     return entropy
 
-def find_best_split_entropy(attr, D, classifier):
-    return 0.0
+def find_best_split(attr, D, classifier):
+    splittable_points = D[attr].unique()
+    split_entropies = {}
+    for split in splittable_points:
+        split_entropies[split] = get_cont_attr_entropy(attr, split, D, classifier)
+    minimum_split = min(split_entropies, key = split_entropies.get)
+    return minimum_split
 
-def get_cont_attr_entropy(attr, b_split, D, classifier):
+def get_cont_attr_entropy(attr, split, D, classifier):
     #D is a pandas dataframe, attr is an attribute of that dataframe (e.g. Color)
-    #returns the entropy of D when D is split by that attr.
+    #returns the entropy of D when D is binary split by attr at b_split
     total_rows = len(D.index)
     total_attr_entropy = 0;
-    D_greater = D[D[attr] > b_split]
-    D_less = D[D[attr] < b_split]
+    D_greater = D[D[attr] >= split]
+    D_less = D[D[attr] < split]
     total_attr_entropy = (len(D_less)/total_rows)*get_entropy(D_less, classifier) + \
         (len(D_greater)/total_rows)*get_entropy(D_greater, classifier)
     #TODO: test
