@@ -5,6 +5,7 @@ import math
 import json
 import pandas as pd
 from anytree import Node, RenderTree
+from six import print_
 
 parser = argparse.ArgumentParser()
 parser.add_argument('CSVFile',
@@ -26,13 +27,30 @@ with open(args.JSONFILE.name) as f:
     d_tree_dict = json.load(f)
 
 def predict_class_label(row, node):
-    local_var = node['var'] #get edge with matching val in row[va] if leaf, return else, recurse
-    for edge in node['edges']:
-        if (edge['edge']["value"] == row[1][local_var]):
-            if 'leaf' in edge['edge']:
-                return edge['edge']['leaf']
+    # return the predicton for the row
+    #if the node has an edge with a matching attribue that leads to a leaf, return the value of that leaf, else recurse
+    row_decision_attr = row[1][node['var']] 
+    for edge_container in node['edges']:
+        edge = edge_container['edge']
+        edge_value = edge['value']
+        condition = '=='
+        if edge['value'][0] == '>':
+            condition = '>='
+            real_value = edge['value'][2:len(edge['value'])]
+            edge_value = real_value
+        if edge['value'][0] == '<':
+            condition = '<'
+            real_value = edge['value'][1:len(edge['value'])]
+            edge_value = real_value
+
+        if (condition == '==' and   str(row_decision_attr) == str(edge_value)) or \
+           (condition == '>=' and float(row_decision_attr) >= float(edge_value)) or \
+           (condition ==  '<' and float(row_decision_attr)  < float(edge_value)):
+            if 'leaf' in edge:
+                return edge['leaf']
             else:
-                return predict_class_label(row, edge['edge']['node'])
+                return predict_class_label(row, edge['node'])
+    print("incomplete tree")
     return None #if we got here tree is incomplete
 
 for row in trainingSet.iterrows(): #predict value with decision tree and compare to true value

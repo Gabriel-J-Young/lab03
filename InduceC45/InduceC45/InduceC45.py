@@ -7,6 +7,7 @@ from anytree import Node, RenderTree
 from six import assertRaisesRegex
 
 continuous_threshold = 10
+gain_threshold = 0.2
 
 parser = argparse.ArgumentParser()
 
@@ -52,19 +53,19 @@ def C45(D, A, classifier, cont, thresh):
         T = make_plurality_leaf(D, classifier)
     else:
         ssa = select_splitting_attribute(A, D, classifier, cont, thresh) #best_A is the best attribute
-        best_A = ssa[0]
-        best_split = ssa[1]
-        if (best_A) == None: #no attribute is good enough for a split
+        if ssa == None: #no attribute is good enough for a split
             T = make_plurality_leaf(D,classifier)
         else: #construct non-leaf node
+            best_A = ssa[0]
+            best_split = ssa[1]
             T = Node(str(best_A)) #this node should be labeled with an attribute
             if cont[best_A]:
+                #The lack of sanitization here will cause a bug if input data includes > or < characters
                 edge_node_g = Node(">="+str(best_split))
                 new_A_g = A.copy()
-                print(best_A)
-                print(cont)
-                print("bs",D[best_A])
                 D_greater = D[D[best_A] >= best_split]
+                #print("recursing",best_A, ">=",best_split,"with D=")
+                #print(D_greater)
                 branch_g = C45(D_greater, new_A_g, classifier,cont, thresh)
                 branch_g.parent = edge_node_g
                 edge_node_g.parent = T
@@ -72,6 +73,8 @@ def C45(D, A, classifier, cont, thresh):
                 edge_node_l = Node("<"+str(best_split))
                 new_A_l = A.copy()
                 D_less = D[D[best_A] < best_split]
+                #print("recursing",best_A, "<" ,best_split, "with D=")
+                #print(D_less)
                 branch_l = C45(D_less, new_A_l, classifier,cont, thresh)
                 branch_l.parent = edge_node_l
                 edge_node_l.parent = T
@@ -98,20 +101,20 @@ def make_plurality_leaf(D, classifier):
     
 def select_splitting_attribute(A, D, classifier, cont, thresh):
     gains = {}
+    best_splits = {}
     base_entropy = get_entropy(D, classifier)
     #for label in class_labels: #calculate entropy of D
-    b_split = -1 #dummy value 
     for attr in A: #for each attribute passed in...
         if cont[attr]: #A is continuous
-            b_split = find_best_split(attr, D, classifier)
-            attr_entropy = get_cont_attr_entropy(attr, b_split, D, classifier)
+            best_splits[attr] = find_best_split(attr, D, classifier)
+            attr_entropy = get_cont_attr_entropy(attr, best_splits[attr], D, classifier)
         else:
             attr_entropy = get_attr_entropy(attr, D, classifier)#calculate entropy of D after being split by attr
         gains[attr] = base_entropy - attr_entropy
     best_attr = max(gains, key=gains.get)#find highest info gain
-    print("gains:", gains)
     if (gains[best_attr] > thresh):
-        return (best_attr, b_split)
+        #print("gains", gains)
+        return (best_attr, best_splits[best_attr])
     return None;
 
 def get_entropy(D, classifier):
@@ -161,6 +164,7 @@ def all_same(s):
 
 #T: tree to tranlate to json
 def tree_to_json(T):
+    #TODO: add continuous functionality
     #given a c45 tree, returns a json
     data = {}
     data['dataset'] = args.TrainingSetFile.name
@@ -212,11 +216,10 @@ del A[-1]
 if restrict_list != None:
     trainingSet = restricted_dataset(trainingSet, A, restrict_list)
 cont = get_continuous(trainingSet, A)
-print(cont)
 #print(trainingSet)
 
-T = C45(trainingSet, A, classif, cont, 0.0)
-print(RenderTree(T))
+T = C45(trainingSet, A, classif, cont, gain_threshold)
+#print(RenderTree(T))
 j = tree_to_json(T)
 json_data_file = open(os.path.splitext(args.TrainingSetFile.name)[0] + ".json", "w")
 json_data_file.write(j)
