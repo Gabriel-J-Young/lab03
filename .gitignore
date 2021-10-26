@@ -136,3 +136,5 @@ InduceC45/InduceC45/.vs/InduceC45/v17/.suo
 InduceC45/InduceC45/housing.json
 InduceC45/InduceC45/InduceC45.pyproj
 InduceC45/InduceC45/iris.data.csv
+*.csv
+InduceC45/InduceC45/InduceC45.pyproj.user
