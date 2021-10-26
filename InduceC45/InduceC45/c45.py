@@ -162,7 +162,7 @@ def all_same(s):
 #
 
 #T: tree to tranlate to json
-def tree_to_json(T, name):
+def tree_to_json_str(T, name):
     #TODO: add continuous functionality
     #given a c45 tree, returns a json
     data = {}
@@ -170,6 +170,15 @@ def tree_to_json(T, name):
     data['node'] = get_node(T)
 
     return json.dumps(data, indent=4)
+
+def tree_to_json(T, name):
+    #TODO: add continuous functionality
+    #given a c45 tree, returns a json
+    data = {}
+    data['dataset'] = name
+    data['node'] = get_node(T)
+
+    return data
 
 def get_node(T):
     data = {}
@@ -190,3 +199,10 @@ def get_edges(children):
         name_dict['edge'] = data
         edges.append(name_dict)
     return edges
+
+def restrict_dataset(D,A, restrict_list):
+    for i in range(0,len(restrict_list)):
+        if int(restrict_list[i])==1:
+            D = D.drop(columns = [A[i]])
+            del A[i]
+    return D
