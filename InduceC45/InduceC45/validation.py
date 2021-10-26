@@ -28,8 +28,7 @@ if (slices_num == -1):
 shuffled = trainingSet.sample(frac=1)
 slices = np.array_split(shuffled, slices_num)
 
-overall_confusion_matrix = [[]]
-mats = []
+overall_confusion_matrix = {}
 
 total_classified = 0
 total_correct = 0
@@ -37,42 +36,69 @@ total_incorrect = 0
 total_average_accurate_rate = 0
 total_average_error_rate = 0
 
+def get_rates(c_mat):
+    correct_count = 0
+    incorrect_count = 0
+    for actual in c_mat:
+        for key, value in c_mat[actual].items():
+            if (key == actual):
+                correct_count += value
+            else:
+                incorrect_count += value
+    total = correct_count + incorrect_count
+    return (correct_count, incorrect_count)
+
+def sum_mat(overall_confusion_matrix, c_mat):
+    print("xd")
+    if (not overall_confusion_matrix): #if overall_confusion_matrix is empty set it to c_mat
+        print("yes")
+        overall_confusion_matrix = c_mat.copy()
+    else: #else loop through c_mat and accumulate values
+        for actual in c_mat:
+            for key, value in c_mat[actual].items():
+                overall_confusion_matrix[actual][key] += value
+    return overall_confusion_matrix
+
+
 for idx, slice in enumerate(slices): #each slice must be designated as a holdout set once
     tmp_slices = slices[0:idx] + slices[idx+1:]
     training_set = pd.concat(tmp_slices)
-    training_set.to_csv()
+    
+    train_file = open(os.path.splitext(args.training_file.name)[0] + "-train" + ".csv", "w")
+    train_file.write(training_set.to_csv())
+    train_file.close()
+
+    train_file = open(os.path.splitext(args.training_file.name)[0] + "-validate" + ".csv", "w")
+    train_file.write(slice.to_csv())
+    train_file.close()
+
     if (args.restrictionsFile):
         c45 = subprocess.call("InduceC45.py " + args.training_file.name + " " + args.restrictionsFile.name)
         c45.wait()
         classify = subprocess.run("classify.py " + args.training_file.name + " example_nursery.json ", check=True, stdout=subprocess.PIPE, universal_newlines=True)
     else:
-        c45 = subprocess.run("python3 InduceC45.py " + args.training_file.name)
+        c45 = subprocess.run("python3 InduceC45.py " + os.path.splitext(args.training_file.name)[0] + "-train" + ".csv")
         #print("python3 classify.py " + args.training_file.name + " " + os.path.splitext(args.training_file.name)[0] + ".json ")
-        classify = subprocess.run("python3 classify.py " + args.training_file.name + " " + os.path.splitext(args.training_file.name)[0] + ".json ", check=True, stdout=subprocess.PIPE, universal_newlines=True)
+        classify = subprocess.run("python3 classify.py " + os.path.splitext(args.training_file.name)[0] + "-validate" + ".csv" + " " + os.path.splitext(args.training_file.name)[0] + ".json ", check=True, stdout=subprocess.PIPE, universal_newlines=True)
         c_output = classify.stdout
         lines = c_output.splitlines()
-        total_classified += int(''.join(filter(str.isdigit, lines[0])))
-        total_correct += int(''.join(filter(str.isdigit, lines[1])))
-        total_incorrect += int(''.join(filter(str.isdigit, lines[2])))
-        total_average_accurate_rate += int(''.join(filter(str.isdigit, lines[3])))
-        total_average_error_rate += int(''.join(filter(str.isdigit, lines[4])))
-        
-        #print(lines[6])
-        mats.append(ast.literal_eval(lines[6]))
+        #get keys in input c_mat, set overall 
+        #for each key in the input c_mat, check if that key exists in the overall c_mat
+        inv_c_mat = ast.literal_eval(lines[6]) #indivial confusion matrix
+        #calculate average accuracy and error rate for this individual c_mat
+        #mats.append(ast.literal_eval(lines[6]))
+        overall_confusion_matrix = sum_mat(overall_confusion_matrix, inv_c_mat)
+        print(overall_confusion_matrix)
+        counts = get_rates(inv_c_mat) #returns correct an incorrect counts
+        total = counts[0] + counts[1]
+        total_classified += total
+        total_correct += counts[0]
+        total_incorrect += counts[1]
+        total_average_accurate_rate += float(counts[0])/total
+        total_average_error_rate += float(counts[1])/total
 
-dd = defaultdict(list)
 
-
-for d in mats:
-    for key, value in d.items():
-        dd[key].append(value)
-
-for d in dd:
-    for key, value in d.items():
-        dd1[key].sum(value)
-    
-
-print("Overall confusion matrix: " + str(dd))
+print("Overall confusion matrix: " + str(overall_confusion_matrix))
 print("Overall accuracy: " + str(total_correct/total_classified))
 print("average accuracy: " + str(total_average_accurate_rate/slices_num))
 print("Overall error: " + str(total_incorrect/total_classified))
