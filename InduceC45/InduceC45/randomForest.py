@@ -10,7 +10,8 @@ from c45 import tree_to_json
 from classifyAlg import predict_class_label
 from classifyAlg import print_stats
 
-gain_threshold = 0.0 # no pruning
+gain_threshold = 0.0 # no 
+num_folds = 10
 
 def restrict_dataset(D,A, restrict_list):
     restricted_D = D.copy()
@@ -34,6 +35,20 @@ def get_rand_dataset(D, A, num_attrs, num_dp):
     rand_dataset = rand_attr_dataset.sample(n=num_dp, replace=True)
     return rand_dataset
 
+def get_forest(D,args):
+    A = []
+    for attribute in D.columns.values:
+        A.append(attribute)
+    classifier = A[-1]
+    del A[-1]
+    forest = []
+    for i in range(args.num_trees):
+        rand_dataset = get_rand_dataset(D,A,args.num_attributes, args.num_data_points)
+        tree = C45(rand_dataset, gain_threshold)
+        name = args.training_set_file.name
+        forest.append(tree_to_json(tree, name))
+    return forest
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('training_set_file',
@@ -46,8 +61,6 @@ parser.add_argument('num_trees',
                     type = int)
 args = parser.parse_args()
 
-#TODO: add arg checking 
-
 training_set = pd.read_csv(args.training_set_file.name, skiprows=[1,2])
 A = []
 for attribute in training_set.columns.values:
@@ -58,14 +71,18 @@ del A[-1]
 if args.num_attributes > len(A):
     sys.stderr.write("num_attributes too large\n")
     raise ValueError
-forest = []
-for i in range(args.num_trees):
-    rand_dataset = get_rand_dataset(training_set,A,args.num_attributes, args.num_data_points)
-    tree = C45(rand_dataset, gain_threshold)
-    name = args.training_set_file.name
-    forest.append(tree_to_json(tree, name))
+
+#training_without = [None]*num_folds
+
+forest = get_forest(training_set, args)
+
     
-# now time to classify
+# now time to classify- forest has all the random trees
+
+
+
+
+
 
 #declare list to store predicted and actual classes
 confusion_list = []
@@ -82,4 +99,4 @@ for row in training_set.iterrows(): #predict value with decision tree and compar
     p_class_struct = {'decision':decision} # to match classify methods
     confusion_list.append((p_class_struct, a_class))
 
-print_stats(confusion_list, training_set)    
+print_stats(confusion_list, training_set)
