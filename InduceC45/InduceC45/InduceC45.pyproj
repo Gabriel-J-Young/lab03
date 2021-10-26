@@ -2,16 +2,18 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>2d0c108b-c02c-464b-b6fe-f83cc9ddef0c</ProjectGuid>
+    <ProjectGuid>76cdeb6d-ebf0-4151-963a-60146e7a17e2</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>InduceC45.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>lab03</Name>
-    <RootNamespace>lab03</RootNamespace>
+    <Name>InduceC45</Name>
+    <RootNamespace>InduceC45</RootNamespace>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments> adult-stretch.csv</CommandLineArguments>
+    <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,14 +24,18 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="a.py" />
-    <Compile Include="classify.py" />
-    <Compile Include="InduceC45.py" />
-    <Compile Include="knn.py">
+    <Compile Include="classify.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="random_forest.py" />
-    <Compile Include="validation.py" />
+    <Compile Include="InduceC45.py" />
+    <Compile Include="validation.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="example_nursery.json">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
