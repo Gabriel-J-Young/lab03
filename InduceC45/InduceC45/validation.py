@@ -49,9 +49,7 @@ def get_rates(c_mat):
     return (correct_count, incorrect_count)
 
 def sum_mat(overall_confusion_matrix, c_mat):
-    print("xd")
     if (not overall_confusion_matrix): #if overall_confusion_matrix is empty set it to c_mat
-        print("yes")
         overall_confusion_matrix = c_mat.copy()
     else: #else loop through c_mat and accumulate values
         for actual in c_mat:
