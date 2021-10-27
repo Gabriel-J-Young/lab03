@@ -55,3 +55,27 @@ def print_stats(confusion_list, trainingSet):
     print("error rate: " + str(total_classified_incorrect/total_classified))
     print("{actual_value[predicted, predicted, etc],etc}")
     print(confusion_lists)
+
+def get_stats(confusion_list, trainingSet):
+    stats = {}
+    stats['total_classified'] = len(confusion_list)
+    stats['total_classified_correct'] = 0
+    stats['total_classified_incorrect'] = 0
+    confusion_lists = {} #each 
+    for val in trainingSet.iloc[:,-1].unique(): #for each possible class label
+        confusion_lists[val] = {}
+    for a_val in confusion_lists: # for each possible actual value
+        for val in trainingSet.iloc[:,-1].unique():
+            confusion_lists[a_val][val] = 0
+
+    for pair in confusion_list:
+        confusion_lists[pair[1]][pair[0]['decision']] += 1
+        #(predicted, actual)
+        if (pair[0]['decision'] == pair[1]):
+            stats['total_classified_correct'] += 1
+        else:
+            stats['total_classified_incorrect'] += 1
+    stats['accuracy'] = stats['total_classified_correct']/stats['total_classified']
+    stats['error_rate'] = stats['total_classified_incorrect']/stats['total_classified']
+    stats['confusion_mat'] = confusion_lists
+    return stats

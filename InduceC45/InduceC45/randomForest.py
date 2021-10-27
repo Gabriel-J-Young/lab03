@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+import numpy as np
 import random
 import sys
 import json
@@ -9,9 +10,10 @@ from c45 import C45
 from c45 import tree_to_json
 from classifyAlg import predict_class_label
 from classifyAlg import print_stats
+from classifyAlg import get_stats
 
 gain_threshold = 0.0 # no 
-num_folds = 10
+num_folds = 2
 
 def restrict_dataset(D,A, restrict_list):
     restricted_D = D.copy()
@@ -49,6 +51,32 @@ def get_forest(D,args):
         forest.append(tree_to_json(tree, name))
     return forest
 
+def get_confusion(D, forest):
+    #given a dataset and a forest, returns a confusion matrix
+    confusion_list = []
+    for row in D.iterrows(): #predict value with decision tree and compare to true value
+        decisions = []
+        for tree in forest:
+            predicted_struct = predict_class_label(row, tree['node'])
+            #print(" ",predicted_struct['decision'])
+            decisions.append(predicted_struct['decision'])
+        c = Counter(decisions)
+        decision = c.most_common(1)[0][0]
+        #print("decision:", decision)
+        a_class = row[1][-1]
+        p_class_struct = {'decision':decision} # to match classify methods
+        confusion_list.append((p_class_struct, a_class))
+    return confusion_list
+
+def sum_mat(overall_confusion_matrix, c_mat):
+    if (overall_confusion_matrix == None): #if overall_confusion_matrix is empty set it to c_mat
+        overall_confusion_matrix = c_mat.copy()
+    else: #else loop through c_mat and accumulate values
+        
+        for actual in c_mat:
+            for key, value in c_mat[actual].items():
+                overall_confusion_matrix[actual][key] += value
+    return overall_confusion_matrix
 
 parser = argparse.ArgumentParser()
 parser.add_argument('training_set_file',
@@ -61,9 +89,9 @@ parser.add_argument('num_trees',
                     type = int)
 args = parser.parse_args()
 
-training_set = pd.read_csv(args.training_set_file.name, skiprows=[1,2])
+big_training_set = pd.read_csv(args.training_set_file.name, skiprows=[1,2])
 A = []
-for attribute in training_set.columns.values:
+for attribute in big_training_set.columns.values:
     A.append(attribute)
 classifier = A[-1]
 del A[-1]
@@ -71,32 +99,37 @@ del A[-1]
 if args.num_attributes > len(A):
     sys.stderr.write("num_attributes too large\n")
     raise ValueError
-
-#training_without = [None]*num_folds
-
-forest = get_forest(training_set, args)
-
     
 # now time to classify- forest has all the random trees
 
 
 
 
+total_correct = 0
+total_classified = 0
 
 
-#declare list to store predicted and actual classes
-confusion_list = []
-for row in training_set.iterrows(): #predict value with decision tree and compare to true value
-    decisions = []
-    for tree in forest:
-        predicted_struct = predict_class_label(row, tree['node'])
-        #print(" ",predicted_struct['decision'])
-        decisions.append(predicted_struct['decision'])
-    c = Counter(decisions)
-    decision = c.most_common(1)[0][0]
-    #print("decision:", decision)
-    a_class = row[1][-1]
-    p_class_struct = {'decision':decision} # to match classify methods
-    confusion_list.append((p_class_struct, a_class))
+#slice dataset into n slices of equal size
+shuffled = big_training_set.sample(frac=1)
+slices = np.array_split(shuffled, num_folds)
 
-print_stats(confusion_list, training_set)
+overall_confusion_mat = None
+total_classified = len(big_training_set.index)
+total_correct = 0
+total_incorrect = 0
+for idx, slice in enumerate(slices): #each slice must be designated as a holdout set once
+    training_slices = slices[0:idx] + slices[idx+1:]
+    training_set = pd.concat(training_slices)
+    forest = get_forest(training_set, args)
+    #now time to classify
+    testing_set = slices[idx]
+    
+    confusion_list = get_confusion(testing_set, forest)
+    stats = get_stats(confusion_list, testing_set)
+
+    overall_confusion_mat = sum_mat(overall_confusion_mat, stats['confusion_mat'])
+    total_correct += stats['total_classified_correct']
+    total_incorrect += stats['total_classified_incorrect']
+print("Overall confusion matrix: " + str(overall_confusion_mat))
+print("Overall accuracy: " + str(total_correct/total_classified))
+print("Overall error: " + str(total_incorrect/total_classified))
