@@ -52,16 +52,19 @@ def knn(D, k, x, numeric, k1, m):
             max_dist = d[1][1]
     dists_norm = []
     for d in dists:
-        print("num: " + str(d[1][1]/max_dist))
-        print("cata: " + str((d[1][0])))
+        #print("num: " + str(d[1][1]/max_dist))
+        #print("cata: " + str((d[1][0])))
         dists_norm.append((d[0], (d[1][1]/max_dist)*(k/(m+k) + (d[1][0])*(m/(m+k)))))
 
     dists_norm.sort(key=lambda x: x[1])
-    dists_norm[1:k+2]
+    
 
     k_nearest = []
-    for d in dists_norm:
+    for d in dists_norm[1:k+1]:
         k_nearest.append(d[0])
+
+    #print(k_nearest)
+
     return max(set(k_nearest), key=k_nearest.count)
         
 
@@ -77,7 +80,10 @@ print(numeric)
 
 D = trainingSet.iloc[:][2:]
 
-for idx,row in enumerate(D.iterrows()):
-    print(knn(D, 2, row, numeric, num_numeric, len(numeric)-num_numeric))
-    break
+class_labels = []
+for idx, row in enumerate(D.iterrows()):
+    class_labels.append(knn(D, 2, row, numeric, num_numeric, len(numeric)-num_numeric))
+
+
+    
 

@@ -73,10 +73,26 @@ for idx, slice in enumerate(slices): #each slice must be designated as a holdout
     train_file.close()
 
     if (args.restrictionsFile):
-        c45 = subprocess.call("InduceC45.py " + args.training_file.name + " " + args.restrictionsFile.name)
+        c45 = subprocess.call("python3 InduceC45.py " + os.path.splitext(args.training_file.name)[0] + "-train" + ".csv" + " " + args.restrictionsFile.name)
         c45.wait()
-        classify = subprocess.run("classify.py " + args.training_file.name + " example_nursery.json ", check=True, stdout=subprocess.PIPE, universal_newlines=True)
-    else:
+        classify = subprocess.run("python3 classify.py " + os.path.splitext(args.training_file.name)[0] + "-validate" + ".csv" + " " + os.path.splitext(args.training_file.name)[0] + ".json ", check=True, stdout=subprocess.PIPE, universal_newlines=True)
+        c_output = classify.stdout
+        lines = c_output.splitlines()
+        #get keys in input c_mat, set overall 
+        #for each key in the input c_mat, check if that key exists in the overall c_mat
+        inv_c_mat = ast.literal_eval(lines[6]) #indivial confusion matrix
+        #calculate average accuracy and error rate for this individual c_mat
+        #mats.append(ast.literal_eval(lines[6]))
+        overall_confusion_matrix = sum_mat(overall_confusion_matrix, inv_c_mat)
+        print(overall_confusion_matrix)
+        counts = get_rates(inv_c_mat) #returns correct an incorrect counts
+        total = counts[0] + counts[1]
+        total_classified += total
+        total_correct += counts[0]
+        total_incorrect += counts[1]
+        total_average_accurate_rate += float(counts[0])/total
+        total_average_error_rate += float(counts[1])/total
+   else:
         c45 = subprocess.run("python3 InduceC45.py " + os.path.splitext(args.training_file.name)[0] + "-train" + ".csv")
         #print("python3 classify.py " + args.training_file.name + " " + os.path.splitext(args.training_file.name)[0] + ".json ")
         classify = subprocess.run("python3 classify.py " + os.path.splitext(args.training_file.name)[0] + "-validate" + ".csv" + " " + os.path.splitext(args.training_file.name)[0] + ".json ", check=True, stdout=subprocess.PIPE, universal_newlines=True)
