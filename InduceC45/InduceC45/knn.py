@@ -14,29 +14,30 @@ args = parser.parse_args()
 
 trainingSet = pd.read_csv(args.TrainingSetFile.name)
 
+class_label_index = -1
+class_label_name = trainingSet.columns.values[class_label_index]
+print(class_label_name)
+
 #returns num dist (non normalized), cata dist (normalized)
-def get_distance(d, x, numeric, k, m):
+def get_distance(d, x, numeric, m):
     sum_squared_dist = 0
     cata_match = 0
     #need to change to not use class label
     for key, value in numeric.items():
-        if (value == 0):
-            #print("numeric")
-            sum_squared_dist += (d[1][key] - x[1][key])**2
-        else:
-            #print("cata")
-            if (d[1][key] == x[1][key]):
-                cata_match += 1
-       
-    #print((cata_match/m)*(m/(m+k)))
-    #print(math.sqrt(sum_squared_dist)*(k/(m+k)))
-    #print("distance: " + str((cata_match/m)*(m/(m+k)) + math.sqrt(sum_squared_dist)*(k/(m+k))))
+        if (not key == class_label_name):
+            if (value == 0):
+                #print("numeric")
+                sum_squared_dist += (d[1][key] - x[1][key])**2
+            else:
+                #print("cata")
+                if (d[1][key] == x[1][key]):
+                    cata_match += 1
    
     return (cata_match/m, math.sqrt(sum_squared_dist))
 
-def knn(D, k, x, numeric, k1, m):
+def knn(D, k, x, numeric, num_numeric, m):
     #D - dataset
-    #k - number of nearest neighbors
+    #num_numeric - number of nearest neighbors
     #x - point to classify
     #numeric - what attributes are numeric
     #k - number of numeric varibles
@@ -45,17 +46,18 @@ def knn(D, k, x, numeric, k1, m):
     dists = []
 
     for d in D.iterrows():   # compute distances
-        dists.append((d[1][-1], get_distance(d, x, numeric, k1, m)))
+        dists.append((d[1][class_label_name], get_distance(d, x, numeric, m)))
     max_dist = 0
     for d in dists:
         if (d[1][1] > max_dist):
             max_dist = d[1][1]
-    dists_norm = []
+    dists_norm = [] #filled with tuples, item, and distance
     for d in dists:
         #print("num: " + str(d[1][1]/max_dist))
         #print("cata: " + str((d[1][0])))
-        dists_norm.append((d[0], (d[1][1]/max_dist)*(k/(m+k) + (d[1][0])*(m/(m+k)))))
+        dists_norm.append((d[0], (d[1][1]/max_dist)*(num_numeric/(m+num_numeric) + (d[1][0])*(m/(m+num_numeric)))))
 
+    #print(x[1])
     dists_norm.sort(key=lambda x: x[1])
     
 
@@ -76,14 +78,13 @@ for col in trainingSet:
     numeric[col] = trainingSet[col].iloc[0]
     if (trainingSet[col].iloc[0] == 0):
         num_numeric += 1
-print(numeric)
+#print(numeric)
 
 D = trainingSet.iloc[:][2:]
 
 class_labels = []
 for idx, row in enumerate(D.iterrows()):
-    class_labels.append(knn(D, 2, row, numeric, num_numeric, len(numeric)-num_numeric))
+    class_labels.append((row[1][class_label_index], knn(D, 5, row, numeric, num_numeric, len(numeric)-num_numeric))) 
 
-
-    
+print(class_labels)
 

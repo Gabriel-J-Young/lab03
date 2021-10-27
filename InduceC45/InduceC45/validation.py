@@ -92,7 +92,7 @@ for idx, slice in enumerate(slices): #each slice must be designated as a holdout
         total_incorrect += counts[1]
         total_average_accurate_rate += float(counts[0])/total
         total_average_error_rate += float(counts[1])/total
-   else:
+    else:
         c45 = subprocess.run("python3 InduceC45.py " + os.path.splitext(args.training_file.name)[0] + "-train" + ".csv")
         #print("python3 classify.py " + args.training_file.name + " " + os.path.splitext(args.training_file.name)[0] + ".json ")
         classify = subprocess.run("python3 classify.py " + os.path.splitext(args.training_file.name)[0] + "-validate" + ".csv" + " " + os.path.splitext(args.training_file.name)[0] + ".json ", check=True, stdout=subprocess.PIPE, universal_newlines=True)
