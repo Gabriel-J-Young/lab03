@@ -31,7 +31,7 @@ for col in trainingSet:
         else:
             cata_names.append(col)
 
-distance_dict = {} #save computed dists
+#distance_dict = {} #save computed dists
 
 
 def knn(D, k, x):
