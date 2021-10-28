@@ -4,11 +4,14 @@ Gabriel Young
 gjyoung@calpoly.edu
 
 On line 21, the skiprows argument may need to be modified if the
-dataset has less rows with useless data. 
-Otherwise, run as directed:
+dataset has less rows with metadata. 
 
-python3 InduceC45 <TrainingSetFile.csv> [<restrictionsFile>]
+running c45:
+ python3 InduceC45.py <TrainingSetFile.csv> [<restrictionsFile>]
+ python3 validation.py <TrainingSetFile.csv>, number folds, [<restrictionsFile>]
 
-python3 classify <CSVFile> <JSONFile>
+running randomForest: 
+ randomForest.py num_attributes num_datapoints num_trees
 
-python3 validation <TrainingSetFile.csv> [<restrictionsFile>] folds
+running knn:
+ 
