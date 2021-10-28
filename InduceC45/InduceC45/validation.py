@@ -82,7 +82,6 @@ for idx, slice in enumerate(slices): #each slice must be designated as a holdout
         #calculate average accuracy and error rate for this individual c_mat
         #mats.append(ast.literal_eval(lines[6]))
         overall_confusion_matrix = sum_mat(overall_confusion_matrix, inv_c_mat)
-        print(overall_confusion_matrix)
         counts = get_rates(inv_c_mat) #returns correct an incorrect counts
         total = counts[0] + counts[1]
         total_classified += total

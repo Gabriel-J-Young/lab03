@@ -38,13 +38,14 @@ def print_stats(confusion_list, trainingSet):
     total_classified_incorrect = 0
     confusion_lists = {} #each 
     for val in trainingSet.iloc[:,-1].unique(): #for each possible class label
-        confusion_lists[val] = {}
+        confusion_lists[str(val)] = {}
     for a_val in confusion_lists: # for each possible actual value
         for val in trainingSet.iloc[:,-1].unique():
-            confusion_lists[a_val][val] = 0
+            confusion_lists[str(a_val)][str(val)] = 0
 
     for pair in confusion_list:
-        confusion_lists[pair[1]][pair[0]['decision']] += 1
+
+        confusion_lists[str(pair[1])][str(pair[0]['decision'])] += 1
         #(predicted, actual)
         if (pair[0]['decision'] == pair[1]):
             total_classified_correct += 1

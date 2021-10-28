@@ -35,6 +35,8 @@ with open(args.JSONFILE.name) as f:
 for row in trainingSet.iterrows(): #predict value with decision tree and compare to true value
     p_class_struct = predict_class_label(row, d_tree_dict['node'])
     a_class = row[1][-1]
+    if str(type(a_class)) == "<class 'numpy.float64'>":
+            a_class = int(a_class)
     confusion_list.append((p_class_struct, a_class))
 
 
