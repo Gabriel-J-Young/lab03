@@ -25,8 +25,6 @@ def restrict_dataset(D,A, restrict_list):
             D = D.drop(columns = [A[i]])
             del A[i]
     return D
-    
-
 
 def get_rand_dataset(D, A, num_attrs, num_dp):
     #return a new dataframe with randomly selected attributes and datapoints
@@ -52,6 +50,13 @@ def get_forest(D,args):
         forest.append(tree_to_json(tree, name))
     return forest
 
+
+def random_predicted(D):
+    #return a random element from the classifier of D
+    class_row = D.iloc[:,-1:]
+    choice = class_row.sample()
+    return str(choice.iloc[0][0])
+
 def get_confusion(D, forest):
     #given a dataset and a forest, returns a confusion matrix
     confusion_list = []
@@ -59,14 +64,17 @@ def get_confusion(D, forest):
         decisions = []
         for tree in forest:
             predicted_struct = predict_class_label(row, tree['node'])
-            #print(" ",predicted_struct['decision'])
-            decisions.append(predicted_struct['decision'])
+            if predicted_struct is not None: 
+                decisions.append(predicted_struct['decision'])
+            else:
+                decisions.append(random_predicted(D))
+        a_class = row[1][-1]
+        if str(type(a_class)) == "<class 'numpy.float64'>":
+            a_class = int(a_class)
         c = Counter(decisions)
         decision = c.most_common(1)[0][0]
-        #print("decision:", decision)
-        a_class = row[1][-1]
         p_class_struct = {'decision':decision} # to match classify methods
-        confusion_list.append((p_class_struct, a_class))
+        confusion_list.append((p_class_struct, str(a_class)))
     return confusion_list
 
 def sum_mat(overall_confusion_matrix, c_mat):
@@ -118,6 +126,7 @@ overall_confusion_mat = None
 total_classified = len(big_training_set.index)
 total_correct = 0
 total_incorrect = 0
+random_predicted(big_training_set)
 for idx, slice in enumerate(slices): #each slice must be designated as a holdout set once
     training_slices = slices[0:idx] + slices[idx+1:]
     training_set = pd.concat(training_slices)

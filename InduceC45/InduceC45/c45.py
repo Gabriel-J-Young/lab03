@@ -59,8 +59,6 @@ def C45_lp(D, A, classifier, cont, thresh):
                 edge_node_g = Node(">="+str(best_split))
                 new_A_g = A.copy()
                 D_greater = D[D[best_A] >= best_split]
-                #print("recursing",best_A, ">=",best_split,"with D=")
-                #print(D_greater)
                 branch_g = C45_lp(D_greater, new_A_g, classifier,cont, thresh)
                 branch_g.parent = edge_node_g
                 edge_node_g.parent = T
@@ -68,8 +66,6 @@ def C45_lp(D, A, classifier, cont, thresh):
                 edge_node_l = Node("<"+str(best_split))
                 new_A_l = A.copy()
                 D_less = D[D[best_A] < best_split]
-                #print("recursing",best_A, "<" ,best_split, "with D=")
-                #print(D_less)
                 branch_l = C45_lp(D_less, new_A_l, classifier,cont, thresh)
                 branch_l.parent = edge_node_l
                 edge_node_l.parent = T
@@ -115,13 +111,12 @@ def select_splitting_attribute(A, D, classifier, cont, thresh):
     return None;
 
 def get_entropy(D, classifier, total_rows):
-    weights = np.array([])
-    for count in D[classifier].value_counts().iteritems():
-        weights = np.append(weights,count[1]/total_rows)
+    weights = np.array([count[1]/total_rows for count in D[classifier].value_counts().iteritems()])
+    #for count in D[classifier].value_counts().iteritems():
+        #weights = np.append(weights,count[1]/total_rows)
         #entropies = np.append(entropies,(count[1]/total_rows) * math.log(count[1]/total_rows, 2))
         #entropy -= (count[1]/total_rows) * math.log(count[1]/total_rows, 2)
-    logs = np.log2(weights)
-    entropy = np.sum(weights*logs)
+    entropy = np.sum(weights*np.log2(weights))
     return entropy*(-1)
 
 def find_best_split(attr, D, classifier):
@@ -129,11 +124,10 @@ def find_best_split(attr, D, classifier):
     split_entropies = {}
     total_rows = len(D.index)
     for split in splittable_points:
-        total_attr_entropy = 0
         D_greater = D[D[attr] >= split]
+        gtr_rows = len(D_greater.index)
         D_less = D[D[attr] < split]
         less_rows= len(D_less.index)
-        gtr_rows = len(D_greater.index)
         split_entropies[split] = (less_rows/total_rows)*get_entropy(D_less, classifier, less_rows) + \
             (gtr_rows/total_rows)*get_entropy(D_greater, classifier, gtr_rows)
     minimum_split = min(split_entropies, key = split_entropies.get)
