@@ -7,6 +7,8 @@ import pandas as pd
 def predict_class_label(row, node):
     # return the predicton for the row
     #if the node has an edge with a matching attribue that leads to a leaf, return the value of that leaf, else recurse
+    #print(row[1])
+    #print(node)
     row_decision_attr = row[1][node['var']] 
     for edge_container in node['edges']:
         edge = edge_container['edge']

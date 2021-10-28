@@ -14,7 +14,7 @@ from classifyAlg import get_stats
 import time
 
 gain_threshold = 0.0 # no 
-num_folds = 3
+num_folds = 5
 
 def restrict_dataset(D,A, restrict_list):
     restricted_D = D.copy()
@@ -110,6 +110,7 @@ parser.add_argument('num_trees',
 args = parser.parse_args()
 
 big_training_set = pd.read_csv(args.training_set_file.name, skiprows=[1,2])
+big_training_set = big_training_set[(big_training_set != "?").all(axis=1)]
 A = []
 for attribute in big_training_set.columns.values:
     A.append(attribute)
