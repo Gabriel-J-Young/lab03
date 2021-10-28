@@ -11,9 +11,10 @@ from c45 import tree_to_json
 from classifyAlg import predict_class_label
 from classifyAlg import print_stats
 from classifyAlg import get_stats
+import time
 
 gain_threshold = 0.0 # no 
-num_folds = 2
+num_folds = 3
 
 def restrict_dataset(D,A, restrict_list):
     restricted_D = D.copy()
@@ -120,7 +121,11 @@ total_incorrect = 0
 for idx, slice in enumerate(slices): #each slice must be designated as a holdout set once
     training_slices = slices[0:idx] + slices[idx+1:]
     training_set = pd.concat(training_slices)
+    start_time = time.time()
     forest = get_forest(training_set, args)
+    end_time = time.time()
+    print("time:", idx, end_time-start_time)
+
     #now time to classify
     testing_set = slices[idx]
     

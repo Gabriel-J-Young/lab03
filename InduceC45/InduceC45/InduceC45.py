@@ -7,6 +7,7 @@ from six import assertRaisesRegex
 from c45 import C45
 from c45 import restrict_dataset
 from c45 import tree_to_json_str
+import time
 
 gain_threshold = 0.2
 
@@ -37,7 +38,10 @@ if restrict_list != None:
 
 #print(trainingSet)
 
+start_time = time.time()
 T = C45(trainingSet, gain_threshold)
+end_time = time.time()
+print("time elapsed:", end_time-start_time)
 #print(RenderTree(T))
 name = args.TrainingSetFile.name
 j = tree_to_json_str(T, name)
