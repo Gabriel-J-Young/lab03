@@ -87,6 +87,17 @@ def sum_mat(overall_confusion_matrix, c_mat):
                 overall_confusion_matrix[actual][key] += value
     return overall_confusion_matrix
 
+def print_c_mat(mat):
+    print(",", end="")
+    for key, val in mat.items():
+        print(key, end=",")
+    print()
+    for key, val in mat.items():
+        print(key, end=",")
+        for key_in, val_in in val.items():
+            print(val_in, end=",")
+        print()
+
 parser = argparse.ArgumentParser()
 parser.add_argument('training_set_file',
                     type = argparse.FileType('r'))
@@ -144,6 +155,7 @@ for idx, slice in enumerate(slices): #each slice must be designated as a holdout
     overall_confusion_mat = sum_mat(overall_confusion_mat, stats['confusion_mat'])
     total_correct += stats['total_classified_correct']
     total_incorrect += stats['total_classified_incorrect']
-print("Overall confusion matrix: " + str(overall_confusion_mat))
 print("Overall accuracy: " + str(total_correct/total_classified))
 print("Overall error: " + str(total_incorrect/total_classified))
+
+print_c_mat(overall_confusion_mat)

@@ -112,10 +112,6 @@ def select_splitting_attribute(A, D, classifier, cont, thresh):
 
 def get_entropy(D, classifier, total_rows):
     weights = np.array([count[1]/total_rows for count in D[classifier].value_counts().iteritems()])
-    #for count in D[classifier].value_counts().iteritems():
-        #weights = np.append(weights,count[1]/total_rows)
-        #entropies = np.append(entropies,(count[1]/total_rows) * math.log(count[1]/total_rows, 2))
-        #entropy -= (count[1]/total_rows) * math.log(count[1]/total_rows, 2)
     entropy = np.sum(weights*np.log2(weights))
     return entropy*(-1)
 
