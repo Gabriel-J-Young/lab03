@@ -102,7 +102,6 @@ for idx, slice in enumerate(slices): #each slice must be designated as a holdout
         #calculate average accuracy and error rate for this individual c_mat
         #mats.append(ast.literal_eval(lines[6]))
         overall_confusion_matrix = sum_mat(overall_confusion_matrix, inv_c_mat)
-        print(overall_confusion_matrix)
         counts = get_rates(inv_c_mat) #returns correct an incorrect counts
         total = counts[0] + counts[1]
         total_classified += total
@@ -111,8 +110,22 @@ for idx, slice in enumerate(slices): #each slice must be designated as a holdout
         total_average_accurate_rate += float(counts[0])/total
         total_average_error_rate += float(counts[1])/total
 
+def print_c_mat(mat):
+    print(",", end="")
+    for key, val in mat.items():
+        print(key, end=",")
+    print()
+    for key, val in mat.items():
+        print(key, end=",")
+        for key_in, val_in in val.items():
+            print(val_in, end=",")
+        print()
 
-print("Overall confusion matrix: " + str(overall_confusion_matrix))
+
+print("Overall confusion matrix:")
+
+print_c_mat(overall_confusion_matrix)
+
 print("Overall accuracy: " + str(total_correct/total_classified))
 print("average accuracy: " + str(total_average_accurate_rate/slices_num))
 print("Overall error: " + str(total_incorrect/total_classified))

@@ -7,6 +7,7 @@ from anytree import Node, RenderTree
 from six import print_
 from classifyAlg import predict_class_label
 from classifyAlg import print_stats
+from classifyAlg import get_stats
 
 parser = argparse.ArgumentParser()
 parser.add_argument('CSVFile',
@@ -25,6 +26,7 @@ confusion_list = []
 
 
 
+
 with open(args.JSONFILE.name) as f:
     d_tree_dict = json.load(f)
 
@@ -35,4 +37,9 @@ for row in trainingSet.iterrows(): #predict value with decision tree and compare
     a_class = row[1][-1]
     confusion_list.append((p_class_struct, a_class))
 
+
 print_stats(confusion_list, trainingSet)
+#print()
+
+
+

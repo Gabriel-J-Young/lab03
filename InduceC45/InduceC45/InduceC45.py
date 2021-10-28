@@ -38,10 +38,10 @@ if restrict_list != None:
 
 #print(trainingSet)
 
-start_time = time.time()
+#start_time = time.time()
 T = C45(trainingSet, gain_threshold)
-end_time = time.time()
-print("time elapsed:", end_time-start_time)
+#end_time = time.time()
+#print("time elapsed:", end_time-start_time)
 #print(RenderTree(T))
 name = args.TrainingSetFile.name
 j = tree_to_json_str(T, name)
