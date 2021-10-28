@@ -1,6 +1,7 @@
 import math
 import pandas
 import json
+import numpy as np
 from anytree import Node, RenderTree
 from six import assertRaisesRegex         
 
@@ -96,48 +97,47 @@ def make_plurality_leaf(D, classifier):
 def select_splitting_attribute(A, D, classifier, cont, thresh):
     gains = {}
     best_splits = {}
-    base_entropy = get_entropy(D, classifier)
+    base_entropy = get_entropy(D, classifier, len(D.index))
     #for label in class_labels: #calculate entropy of D
     for attr in A: #for each attribute passed in...
         if cont[attr]: #A is continuous
-            best_splits[attr] = find_best_split(attr, D, classifier)
-            attr_entropy = get_cont_attr_entropy(attr, best_splits[attr], D, classifier)
+            fbs = find_best_split(attr, D, classifier)
+            best_splits[attr] = fbs[0]
+            attr_entropy = fbs[1]
+            #suboptimal
         else:
             best_splits[attr] = -1 # dummy value, never used
             attr_entropy = get_attr_entropy(attr, D, classifier)#calculate entropy of D after being split by attr
         gains[attr] = base_entropy - attr_entropy
     best_attr = max(gains, key=gains.get)#find highest info gain
     if (gains[best_attr] > thresh):
-        #print("gains", gains)
         return (best_attr, best_splits[best_attr])
     return None;
 
-def get_entropy(D, classifier):
-    total_rows = len(D.index)
-    entropy = 0
+def get_entropy(D, classifier, total_rows):
+    weights = np.array([])
     for count in D[classifier].value_counts().iteritems():
-        entropy -= (count[1]/total_rows) * math.log(count[1]/total_rows, 2)
-    return entropy
+        weights = np.append(weights,count[1]/total_rows)
+        #entropies = np.append(entropies,(count[1]/total_rows) * math.log(count[1]/total_rows, 2))
+        #entropy -= (count[1]/total_rows) * math.log(count[1]/total_rows, 2)
+    logs = np.log2(weights)
+    entropy = np.sum(weights*logs)
+    return entropy*(-1)
 
 def find_best_split(attr, D, classifier):
     splittable_points = D[attr].unique()
     split_entropies = {}
-    for split in splittable_points:
-        split_entropies[split] = get_cont_attr_entropy(attr, split, D, classifier)
-    minimum_split = min(split_entropies, key = split_entropies.get)
-    return minimum_split
-
-def get_cont_attr_entropy(attr, split, D, classifier):
-    #D is a pandas dataframe, attr is an attribute of that dataframe (e.g. Color)
-    #returns the entropy of D when D is binary split by attr at b_split
     total_rows = len(D.index)
-    total_attr_entropy = 0;
-    D_greater = D[D[attr] >= split]
-    D_less = D[D[attr] < split]
-    total_attr_entropy = (len(D_less)/total_rows)*get_entropy(D_less, classifier) + \
-        (len(D_greater)/total_rows)*get_entropy(D_greater, classifier)
-    #TODO: test
-    return total_attr_entropy
+    for split in splittable_points:
+        total_attr_entropy = 0
+        D_greater = D[D[attr] >= split]
+        D_less = D[D[attr] < split]
+        less_rows= len(D_less.index)
+        gtr_rows = len(D_greater.index)
+        split_entropies[split] = (less_rows/total_rows)*get_entropy(D_less, classifier, less_rows) + \
+            (gtr_rows/total_rows)*get_entropy(D_greater, classifier, gtr_rows)
+    minimum_split = min(split_entropies, key = split_entropies.get)
+    return (minimum_split, split_entropies[minimum_split])
 
 def get_attr_entropy(attr, D, classifier):
     #D is a pandas dataframe, attr is an attribute of that dataframe (e.g. Color)
@@ -147,7 +147,7 @@ def get_attr_entropy(attr, D, classifier):
     attr_instances = D[attr].unique()
     for attr_instance in attr_instances:
         D_matching_attr = D[D[attr]==attr_instance]
-        attr_instance_entropy = get_entropy(D_matching_attr, classifier)
+        attr_instance_entropy = get_entropy(D_matching_attr, classifier, total_rows)
         total_attr_entropy += len(D_matching_attr)/total_rows * attr_instance_entropy
     return total_attr_entropy
 
@@ -192,7 +192,7 @@ def get_edges(children):
         data = {}
         data['value'] = child.name
         if (hasattr(child.children[0],'purity')): #must be leaf
-            data['leaf'] = {"decision": child.children[0].name,"p": child.children[0].purity}
+            data['leaf'] = {"decision": str(child.children[0].name),"p": child.children[0].purity}
         else: #must be node
             data['node'] = get_node(child.children[0])
         name_dict = {}
